@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://kwonflower831-cell.github.io/worker-toolbox/sitemap.xml

@@ -134,14 +134,14 @@ $('hourBtn').onclick = () => {
   const w = num('wage'), h = num('weekHours');
   if (w <= 0 || h <= 0) return toast('시급과 주 근로시간을 입력해 주세요');
   const holiday = h >= 15 ? Math.min(h, 40) / 40 * 8 : 0;
-  const monthHours = (h + holiday) * 365 / 7 / 12;
+  const monthHours = Math.round((h + holiday) * 365 / 7 / 12); // 주 40h 기준 209시간(고용노동부 환산 기준)
   const monthly = monthHours * w;
   const ok = w >= RATE.minWage;
   $('hBig').textContent = won(monthly);
   $('hRows').innerHTML =
     `<div class="row"><span>주휴시간</span><span>주 ${holiday.toFixed(1)}시간 (주 15시간 이상 근무 시 발생)</span></div>` +
     `<div class="row"><span>주휴수당</span><span>주 ${won(holiday * w)}</span></div>` +
-    `<div class="row"><span>월 환산 근로시간</span><span>${monthHours.toFixed(1)}시간</span></div>` +
+    `<div class="row"><span>월 환산 근로시간</span><span>${monthHours}시간</span></div>` +
     `<div class="row"><span>연봉 환산(세전)</span><span>${won(monthly * 12)}</span></div>` +
     `<div class="row"><span>2026 최저시급(${RATE.minWage.toLocaleString()}원) 대비</span><span class="${ok ? 'ok' : 'no'}">${ok ? '✔ 충족' : '✖ 미달 ' + won(RATE.minWage - w) + ' 부족'}</span></div>`;
   $('hResult').classList.add('show');
