@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 연봉 실수령액·퇴직금·주휴수당 계산기 | 직장인 필수 계산기</title>
+<meta name="description" content="2026년 최신 4대보험 요율 기준 연봉 실수령액, 퇴직금, 시급·주휴수당·최저임금 계산기. 로그인 없이 무료, 입력값은 서버로 전송되지 않아요.">
+<meta property="og:title" content="내 월급 실수령액, 얼마일까? 2026 직장인 필수 계산기">
+<meta property="og:description" content="연봉 실수령액 · 퇴직금 · 주휴수당 · 최저임금을 10초 만에 계산하세요.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#3b6cff">
+<link rel="stylesheet" href="style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"직장인 필수 계산기","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},"inLanguage":"ko"}
+</script>
+</head>
+<body>
+<header class="hero">
+  <span class="badge">2026년 요율 반영 · 무료 · 로그인 없음</span>
+  <h1>💼 직장인 필수 계산기</h1>
+  <p>내 월급, 퇴직금, 주휴수당… 10초 만에 확인하세요</p>
+</header>
+
+<nav class="tabs">
+  <button data-tab="salary">💰 연봉 실수령액</button>
+  <button data-tab="severance">🧾 퇴직금</button>
+  <button data-tab="hourly">⏰ 시급·주휴수당</button>
+</nav>
+
+<main class="wrap">
+  <section class="panel" id="p-salary">
+    <div class="card">
+      <h2>연봉 실수령액 계산기</h2>
+      <p class="sub">4대보험과 소득세를 뺀 한 달 통장에 찍히는 금액을 추정해요.</p>
+      <div class="grid">
+        <div><label for="annual">연봉 (세전, 만원)</label><input id="annual" type="number" inputmode="numeric" placeholder="예: 4000"></div>
+        <div><label for="nonTax">월 비과세액 (식대 등, 만원)</label><input id="nonTax" type="number" value="20"></div>
+        <div><label for="deps">부양가족 수 (본인 포함)</label><input id="deps" type="number" value="1" min="1"></div>
+        <div><label for="kids">8세 이상 자녀 수</label><input id="kids" type="number" value="0" min="0"></div>
+      </div>
+      <button class="btn" id="salaryBtn">실수령액 계산하기</button>
+      <div class="result" id="sResult">
+        <div class="sub" style="margin:0">월 예상 실수령액</div>
+        <div class="big" id="sNet"></div>
+        <div class="bar" id="sBar"></div><div class="legend" id="sLegend"></div>
+        <div class="rows" id="sRows"></div>
+        <div class="chips" id="sChips"></div>
+        <button class="btn ghost" id="salaryShare">📤 결과 공유하기</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-severance">
+    <div class="card">
+      <h2>퇴직금 계산기</h2>
+      <p class="sub">1년 이상 근무하고 주 15시간 이상 일했다면 받을 수 있는 법정 퇴직금이에요.</p>
+      <div class="grid">
+        <div><label for="joinDate">입사일</label><input id="joinDate" type="date"></div>
+        <div><label for="leaveDate">퇴사일</label><input id="leaveDate" type="date"></div>
+        <div><label for="wage3">최근 3개월 급여 합계 (세전, 만원)</label><input id="wage3" type="number" placeholder="예: 900"></div>
+        <div><label for="days3">최근 3개월 총 일수</label><input id="days3" type="number" value="92"></div>
+        <div><label for="bonus">연간 상여금 (만원)</label><input id="bonus" type="number" value="0"></div>
+        <div><label for="leavePay">연차수당 (직전 1년, 만원)</label><input id="leavePay" type="number" value="0"></div>
+      </div>
+      <button class="btn" id="sevBtn">퇴직금 계산하기</button>
+      <div class="result" id="vResult">
+        <div class="sub" style="margin:0">예상 퇴직금 (세전)</div>
+        <div class="big" id="vBig"></div>
+        <div class="rows" id="vRows"></div>
+        <button class="btn ghost" id="sevShare">📤 결과 공유하기</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-hourly">
+    <div class="card">
+      <h2>시급 · 주휴수당 · 최저임금 계산기</h2>
+      <p class="sub">알바생·단시간 근로자의 월급과 최저시급 충족 여부를 확인해요.</p>
+      <div class="grid">
+        <div><label for="wage">시급 (원)</label><input id="wage" type="number" value="10320"></div>
+        <div><label for="weekHours">주 근로시간</label><input id="weekHours" type="number" value="40"></div>
+      </div>
+      <button class="btn" id="hourBtn">월급 계산하기</button>
+      <div class="result" id="hResult">
+        <div class="sub" style="margin:0">주휴수당 포함 예상 월급 (세전)</div>
+        <div class="big" id="hBig"></div>
+        <div class="rows" id="hRows"></div>
+        <button class="btn ghost" id="hourShare">📤 결과 공유하기</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>자주 묻는 질문</h2>
+    <details><summary>연봉과 실수령액은 왜 차이가 날까요?</summary><p>연봉은 세전 금액입니다. 매달 국민연금(4.75%), 건강보험(3.595%), 장기요양보험(건강보험료의 13.14%), 고용보험(0.9%)과 소득세·지방소득세가 공제돼서 보통 연봉의 85~90% 정도가 통장에 들어와요.</p></details>
+    <details><summary>비과세 식대 20만원은 무엇인가요?</summary><p>월 20만원까지의 식대는 비과세여서 4대보험료와 소득세 계산에서 제외돼요. 그래서 같은 연봉이어도 식대가 포함되면 실수령액이 조금 늘어납니다.</p></details>
+    <details><summary>퇴직금은 어떻게 계산하나요?</summary><p>1일 평균임금(최근 3개월 임금총액 ÷ 그 기간 일수)에 30일을 곱하고, 재직일수를 365로 나눈 값을 곱합니다. 상여금과 연차수당은 3개월분(연 금액의 3/12)이 평균임금에 반영돼요.</p></details>
+    <details><summary>주휴수당은 누가 받나요?</summary><p>1주 소정근로시간이 15시간 이상이고 그 주를 개근한 근로자에게 하루치 유급휴일 수당이 발생해요. 주 40시간 근무 기준 월 환산시간은 209시간입니다.</p></details>
+    <details><summary>2026년 최저시급은 얼마인가요?</summary><p>2026년 최저시급은 10,320원(전년 대비 2.9% 인상)이고, 주 40시간·주휴 포함 월 환산액은 2,156,880원이에요.</p></details>
+    <details><summary>입력한 금액이 저장되거나 전송되나요?</summary><p>아니요. 모든 계산은 여러분의 브라우저 안에서만 이루어지고, 어떤 정보도 서버로 보내거나 저장하지 않아요.</p></details>
+  </section>
+</main>
+
+<footer>
+  ⚠️ 이 계산기는 참고용 추정치입니다. 실제 급여는 회사의 간이세액표 적용, 공제 항목, 보험료 정산에 따라 달라질 수 있어요.<br>
+  기준: 2026년 4대보험 요율(국민연금 상한 659만원, 건강보험 7.19%, 장기요양 13.14%, 고용보험 0.9%), 최저시급 10,320원.
+</footer>
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
