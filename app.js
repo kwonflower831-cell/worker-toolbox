@@ -10,6 +10,8 @@ const RATE = {
   employment: 0.009,        // 고용보험 근로자 부담
   localTax: 0.1,            // 지방소득세: 소득세의 10%
   minWage: 10320,           // 2026년 최저시급
+  unempMax: 68100,          // 2026년 구직급여 1일 상한액
+  unempMin: 66048,          // 2026년 구직급여 1일 하한액 (8시간, 최저임금의 80%)
 };
 
 const $ = id => document.getElementById(id);
@@ -35,7 +37,7 @@ function showTab(name) {
   history.replaceState(null, '', '#' + name);
 }
 document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
-showTab(['salary', 'severance', 'hourly'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'salary');
+showTab(['salary', 'severance', 'hourly', 'reverse', 'annualleave', 'unemp'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'salary');
 
 // ===== 1) 연봉 실수령액 =====
 function taxBase(tp) { // 과세표준 → 산출세액 (종합소득세율)
@@ -151,3 +153,67 @@ $('hourShare').onclick = () => shareText('⏰ ' + lastHourly);
 
 // 기본값
 $('leaveDate').value = new Date().toISOString().slice(0, 10);
+
+// ===== 4) 실수령액 → 연봉 역산 =====
+let lastRev = '';
+$('revBtn').onclick = () => {
+  const target = num('rNet') * 10000;
+  if (target <= 0) return toast('목표 실수령액을 입력해 주세요');
+  const nt = num('rNonTax') * 10000, deps = Math.max(1, num('rDeps')), kids = num('rKids');
+  let lo = 1e6, hi = 2e9;
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2;
+    if (calcSalary(mid, nt, deps, kids).net < target) lo = mid; else hi = mid;
+  }
+  const annual = Math.ceil(hi / 10000) * 10000;
+  const r = calcSalary(annual, nt, deps, kids);
+  $('rBig').textContent = won(annual);
+  $('rRows').innerHTML =
+    `<div class="row"><span>월 급여(세전)</span><span>${won(annual / 12)}</span></div>` +
+    `<div class="row"><span>월 실수령액(추정)</span><span>${won(r.net)}</span></div>` +
+    `<div class="row"><span>월 공제 합계</span><span>-${won(r.totalDed)}</span></div>` +
+    `<div class="row"><span>연봉 대비 실수령 비율</span><span>${(r.net * 12 / annual * 100).toFixed(1)}%</span></div>`;
+  $('rResult').classList.add('show');
+  lastRev = `월 ${num('rNet').toLocaleString()}만원을 받으려면 세전 연봉 약 ${Math.round(annual / 10000).toLocaleString()}만원이 필요해요`;
+};
+$('revShare').onclick = () => shareText('🔁 ' + lastRev);
+
+// ===== 5) 연차수당 =====
+let lastAl = '';
+$('alBtn').onclick = () => {
+  const m = num('alMonthly') * 10000, d = num('alDays'), dh = num('alHours') || 8, mh = num('alMonthHours') || 209;
+  if (m <= 0 || d <= 0) return toast('통상임금과 연차 일수를 입력해 주세요');
+  const hourly = m / mh, daily = hourly * dh, total = daily * d;
+  $('aBig').textContent = won(total);
+  $('aRows').innerHTML =
+    `<div class="row"><span>통상시급</span><span>${won(hourly)}</span></div>` +
+    `<div class="row"><span>1일 통상임금</span><span>${won(daily)}</span></div>` +
+    `<div class="row"><span>계산식</span><span>${won(daily)} × ${d}일</span></div>`;
+  $('aResult').classList.add('show');
+  lastAl = `미사용 연차 ${d}일 → 연차수당 약 ${won(total)}`;
+};
+$('alShare').onclick = () => shareText('🏖 ' + lastAl);
+
+// ===== 6) 실업급여 (구직급여) =====
+const UNEMP_DAYS = [[120, 120], [150, 180], [180, 210], [210, 240], [240, 270]];
+let lastUn = '';
+$('uBtn').onclick = () => {
+  const w = num('uWage3') * 10000, d3 = num('uDays3') || 92;
+  if (w <= 0) return toast('최근 3개월 임금을 입력해 주세요');
+  const avg = w / d3;
+  const raw = avg * 0.6;
+  const daily = Math.min(Math.max(raw, RATE.unempMin), RATE.unempMax);
+  const days = UNEMP_DAYS[Number($('uPeriod').value)][Number($('uAge').value)];
+  const total = daily * days;
+  $('uBig').textContent = won(total);
+  $('uRows').innerHTML =
+    `<div class="row"><span>1일 평균임금</span><span>${won(avg)}</span></div>` +
+    `<div class="row"><span>구직급여 일액 (평균임금의 60%)</span><span>${won(raw)}</span></div>` +
+    `<div class="row"><span>적용 일액 (하한 ${RATE.unempMin.toLocaleString()} ~ 상한 ${RATE.unempMax.toLocaleString()}원)</span><span>${won(daily)}</span></div>` +
+    `<div class="row"><span>소정급여일수</span><span>${days}일</span></div>` +
+    `<div class="row"><span>월 환산(30일)</span><span>${won(daily * 30)}</span></div>` +
+    `<div class="row"><span class="no">비자발적 퇴사 등 수급 요건 충족이 전제예요</span><span></span></div>`;
+  $('uResult').classList.add('show');
+  lastUn = `실업급여 하루 약 ${won(daily)} × ${days}일 = 총 약 ${won(total)}`;
+};
+$('uShare').onclick = () => shareText('🛟 ' + lastUn);
