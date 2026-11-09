@@ -17,6 +17,7 @@
 </script>
 </head>
 <body>
+<div class="top-bar"><button id="themeToggle" class="theme-btn">🌓 테마 변경</button></div>
 <header class="hero">
   <span class="badge">2026년 요율 반영 · 무료 · 로그인 없음</span>
   <h1>💼 직장인 필수 계산기</h1>
@@ -30,6 +31,7 @@
   <button data-tab="reverse">🔁 실수령→연봉</button>
   <button data-tab="annualleave">🏖 연차수당</button>
   <button data-tab="unemp">🛟 실업급여</button>
+  <button data-tab="table">📊 2026 연봉표</button>
 </nav>
 
 <main class="wrap">
@@ -50,7 +52,7 @@
         <div class="bar" id="sBar"></div><div class="legend" id="sLegend"></div>
         <div class="rows" id="sRows"></div>
         <div class="chips" id="sChips"></div>
-        <button class="btn ghost" id="salaryShare">📤 결과 공유하기</button>
+        <div class="btn-group"><button class="btn ghost" id="salaryShare">📤 텍스트 복사/공유</button><button class="btn subtle" id="salaryCardBtn">📸 카드 이미지 저장</button></div>
       </div>
     </div>
   </section>
@@ -95,6 +97,27 @@
     </div>
   </section>
 
+  <section class="panel" id="p-table">
+    <div class="card">
+      <h2>2026년 연봉 구간별 실수령액 요약표</h2>
+      <p class="sub">부양가족 1인(본인), 비과세 식대 20만원 기준 월 실수령액입니다. 행을 클릭하면 계산기에 자동 입력돼요.</p>
+      <div class="table-wrap">
+        <table class="salary-table">
+          <thead>
+            <tr>
+              <th>연봉 (세전)</th>
+              <th>월 급여(세전)</th>
+              <th>4대보험 합계</th>
+              <th>소득세+지방세</th>
+              <th>월 예상 실수령액</th>
+              <th>공제율</th>
+            </tr>
+          </thead>
+          <tbody id="salaryTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
   <section class="panel" id="p-reverse">
     <div class="card">
       <h2>실수령액으로 연봉 역산하기</h2>

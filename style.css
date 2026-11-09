@@ -39,3 +39,26 @@ details p{color:var(--muted);margin:8px 0 0;font-size:.93rem}
 footer{text-align:center;color:var(--muted);font-size:.8rem;padding:24px 20px 48px}
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:99px;opacity:0;transition:.25s;pointer-events:none;font-size:.9rem}
 .toast.show{opacity:1}
+
+/* 테마 토글 및 상단 컨트롤 */
+.top-bar { display:flex; justify-content:flex-end; max-width:860px; margin:0 auto; padding:12px 20px 0; }
+.theme-btn { background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:#fff; padding:6px 14px; border-radius:99px; cursor:pointer; font-size:0.85rem; font-weight:700; transition:0.2s; backdrop-filter:blur(4px); }
+.theme-btn:hover { background:rgba(255,255,255,0.35); }
+body.light-theme { --bg:#f6f8fb; --card:#fff; --text:#1b2433; --muted:#667085; --line:#e4e8ef; }
+body.dark-theme { --bg:#0e1320; --card:#161d2e; --text:#e8ecf5; --muted:#9aa5b8; --line:#263049; }
+
+/* 연봉 요약표 스타일 */
+.table-wrap { overflow-x:auto; margin-top:16px; border-radius:12px; border:1px solid var(--line); }
+table.salary-table { width:100%; border-collapse:collapse; font-size:0.88rem; text-align:right; }
+table.salary-table th, table.salary-table td { padding:10px 12px; border-bottom:1px solid var(--line); }
+table.salary-table th { background:var(--bg); color:var(--muted); font-weight:700; white-space:nowrap; }
+table.salary-table th:first-child, table.salary-table td:first-child { text-align:left; font-weight:700; }
+table.salary-table tr:hover { background:rgba(59,108,255,0.06); cursor:pointer; }
+table.salary-table tr:last-child td { border-bottom:none; }
+.highlight-net { color:var(--accent); font-weight:800; }
+
+/* 액션 버튼 그룹 */
+.btn-group { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+@media (max-width:560px) { .btn-group { grid-template-columns:1fr; } }
+.btn.subtle { background:var(--bg); color:var(--accent); border:1px solid var(--accent); margin:0; font-weight:700; }
+.btn.subtle:hover { background:rgba(59,108,255,0.1); }

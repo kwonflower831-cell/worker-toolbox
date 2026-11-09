@@ -37,7 +37,7 @@ function showTab(name) {
   history.replaceState(null, '', '#' + name);
 }
 document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
-showTab(['salary', 'severance', 'hourly', 'reverse', 'annualleave', 'unemp'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'salary');
+showTab(['salary', 'severance', 'hourly', 'reverse', 'annualleave', 'unemp', 'table'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'salary');
 
 // ===== 1) 연봉 실수령액 =====
 function taxBase(tp) { // 과세표준 → 산출세액 (종합소득세율)
@@ -217,3 +217,189 @@ $('uBtn').onclick = () => {
   lastUn = `실업급여 하루 약 ${won(daily)} × ${days}일 = 총 약 ${won(total)}`;
 };
 $('uShare').onclick = () => shareText('🛟 ' + lastUn);
+// ===== 7) 테마 토글 (다크/라이트) =====
+const themeBtn = $('themeToggle');
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme) {
+  document.body.classList.add(savedTheme);
+  themeBtn.textContent = savedTheme === 'dark-theme' ? '☀️ 라이트 모드' : '🌙 다크 모드';
+}
+themeBtn.onclick = () => {
+  const isDark = document.body.classList.contains('dark-theme');
+  document.body.classList.remove('dark-theme', 'light-theme');
+  const next = isDark ? 'light-theme' : 'dark-theme';
+  document.body.classList.add(next);
+  localStorage.setItem('theme', next);
+  themeBtn.textContent = next === 'dark-theme' ? '☀️ 라이트 모드' : '🌙 다크 모드';
+};
+
+// ===== 8) 2026 연봉 구간별 요약표 렌더링 =====
+const TIERS = [2400, 2600, 2800, 3000, 3200, 3500, 3800, 4000, 4500, 5000, 5500, 6000, 7000, 8000, 9000, 10000, 12000];
+const tb = $('salaryTableBody');
+if (tb) {
+  TIERS.forEach(y => {
+    const res = calcSalary(y * 10000, 200000, 1, 0);
+    const fourInsurances = res.pension + res.health + res.ltc + res.emp;
+    const taxes = res.incomeTax + res.local;
+    const rate = (res.totalDed / res.grossM * 100).toFixed(1);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${y.toLocaleString()}만원</td>
+      <td>${won(res.grossM)}</td>
+      <td>-${won(fourInsurances)}</td>
+      <td>-${won(taxes)}</td>
+      <td class="highlight-net">${won(res.net)}</td>
+      <td>${rate}%</td>
+    `;
+    tr.title = `${y}만원 계산기로 바로 확인하기`;
+    tr.onclick = () => {
+      showTab('salary');
+      $('annual').value = y;
+      $('salaryBtn').click();
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    };
+    tb.appendChild(tr);
+  });
+}
+
+// ===== 9) SNS/스레드용 카드 이미지(1080x1080) 생성 & 다운로드 =====
+let currentSalaryResult = null;
+const origCalcSalaryBtn = $('salaryBtn').onclick;
+$('salaryBtn').onclick = () => {
+  origCalcSalaryBtn();
+  const annual = num('annual') * 10000;
+  if (annual > 0) {
+    currentSalaryResult = {
+      annual: num('annual'),
+      res: calcSalary(annual, num('nonTax') * 10000, Math.max(1, num('deps')), num('kids'))
+    };
+  }
+};
+
+$('salaryCardBtn').onclick = () => {
+  if (!currentSalaryResult) return toast('먼저 연봉을 계산해 주세요');
+  const { annual, res } = currentSalaryResult;
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080; canvas.height = 1080;
+  const ctx = canvas.getContext('2d');
+
+  // 배경 그라디언트
+  const grad = ctx.createLinearGradient(0, 0, 1080, 1080);
+  grad.addColorStop(0, '#0f172a');
+  grad.addColorStop(0.5, '#1e293b');
+  grad.addColorStop(1, '#0e1726');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1080, 1080);
+
+  // 상단 장식 원
+  ctx.fillStyle = 'rgba(59, 108, 255, 0.15)';
+  ctx.beginPath(); ctx.arc(900, 150, 260, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(124, 77, 255, 0.15)';
+  ctx.beginPath(); ctx.arc(150, 950, 220, 0, Math.PI * 2); ctx.fill();
+
+  // 배지
+  ctx.fillStyle = 'rgba(59, 108, 255, 0.3)';
+  ctx.roundRect(70, 70, 310, 48, 24); ctx.fill();
+  ctx.fillStyle = '#60a5fa';
+  ctx.font = 'bold 22px system-ui, Pretendard, sans-serif';
+  ctx.fillText('💼 2026 연봉 실수령액 리포트', 90, 102);
+
+  // 타이틀
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '500 28px system-ui, Pretendard, sans-serif';
+  ctx.fillText(`세전 연봉 ${annual.toLocaleString()}만 원 (월 ${won(res.grossM)})`, 70, 180);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 36px system-ui, Pretendard, sans-serif';
+  ctx.fillText('한 달 예상 실수령액', 70, 235);
+
+  // 큰 실수령액
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = '900 82px system-ui, Pretendard, sans-serif';
+  ctx.fillText(won(res.net), 70, 335);
+
+  // 카드 박스 (공제 세부 내역)
+  ctx.fillStyle = 'rgba(30, 41, 59, 0.7)';
+  ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
+  ctx.lineWidth = 2;
+  ctx.roundRect(70, 380, 940, 420, 24);
+  ctx.fill(); ctx.stroke();
+
+  ctx.fillStyle = '#e2e8f0';
+  ctx.font = 'bold 28px system-ui, Pretendard, sans-serif';
+  ctx.fillText('월 주요 공제 내역', 110, 435);
+
+  const items = [
+    ['국민연금 (4.75%)', res.pension, '#3b6cff'],
+    ['건강보험 (3.595%)', res.health, '#12b76a'],
+    ['장기요양보험', res.ltc, '#7c4dff'],
+    ['고용보험 (0.9%)', res.emp, '#f79009'],
+    ['소득세 + 지방세', res.incomeTax + res.local, '#f04438']
+  ];
+
+  let yOffset = 490;
+  items.forEach(([label, val, color]) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(110, yOffset - 16, 12, 12);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '500 24px system-ui, Pretendard, sans-serif';
+    ctx.fillText(label, 135, yOffset - 4);
+
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = 'bold 24px system-ui, Pretendard, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`-${won(val)}`, 970, yOffset - 4);
+    ctx.textAlign = 'left';
+
+    yOffset += 50;
+  });
+
+  // 총 공제 및 공제율
+  ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
+  ctx.beginPath(); ctx.moveTo(110, 745); ctx.lineTo(970, 745); ctx.stroke();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 26px system-ui, Pretendard, sans-serif';
+  ctx.fillText(`총 공제액 (${(res.totalDed / res.grossM * 100).toFixed(1)}% 공제)`, 110, 785);
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#f87171';
+  ctx.fillText(`-${won(res.totalDed)}`, 970, 785);
+  ctx.textAlign = 'left';
+
+  // 하단 칩 태그
+  const chips = [
+    `🕒 실수령 시급 약 ${won(res.net / 209)}`,
+    `📅 하루 약 ${won(res.net / 21.7)}`,
+    `📆 연 실수령액 약 ${won(res.net * 12)}`
+  ];
+  let chipX = 70;
+  ctx.font = '500 22px system-ui, Pretendard, sans-serif';
+  chips.forEach(c => {
+    const w = ctx.measureText(c).width + 36;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.roundRect(chipX, 830, w, 50, 25);
+    ctx.fill();
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillText(c, chipX + 18, 862);
+    chipX += w + 16;
+  });
+
+  // 푸터 워터마크
+  ctx.fillStyle = '#64748b';
+  ctx.font = '500 20px system-ui, Pretendard, sans-serif';
+  ctx.fillText('🔗 직장인 필수 계산기 | kwonflower831-cell.github.io/worker-toolbox', 70, 990);
+
+  // 다운로드
+  const link = document.createElement('a');
+  link.download = `2026_연봉${annual}만원_실수령액.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  toast('📸 카드 이미지가 저장되었습니다!');
+};
+
+// URL 쿼리 파라미터 자동 반영 (?annual=4000 등)
+const params = new URLSearchParams(window.location.search);
+if (params.has('annual')) {
+  $('annual').value = params.get('annual');
+  $('salaryBtn').click();
+}
