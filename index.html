@@ -12,12 +12,17 @@
 <link rel="canonical" href="https://kwonflower831-cell.github.io/worker-toolbox/">
 <meta name="theme-color" content="#3b6cff">
 <link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon.svg">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebApplication","name":"직장인 필수 계산기","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},"inLanguage":"ko"}
 </script>
 </head>
 <body>
-<div class="top-bar"><button id="themeToggle" class="theme-btn">🌓 테마 변경</button></div>
+<div class="top-bar"><button id="installBtn" class="theme-btn" style="display:none;margin-right:8px;">📱 앱으로 설치</button><button id="themeToggle" class="theme-btn">🌓 테마 변경</button></div>
 <header class="hero">
   <span class="badge">2026년 요율 반영 · 무료 · 로그인 없음</span>
   <h1>💼 직장인 필수 계산기</h1>
@@ -32,6 +37,7 @@
   <button data-tab="annualleave">🏖 연차수당</button>
   <button data-tab="unemp">🛟 실업급여</button>
   <button data-tab="table">📊 2026 연봉표</button>
+  <button data-tab="freelance">💼 3.3% 원천징수</button>
 </nav>
 
 <main class="wrap">
@@ -97,6 +103,22 @@
     </div>
   </section>
 
+  <section class="panel" id="p-freelance">
+    <div class="card">
+      <h2>3.3% 사업소득세 원천징수 계산기</h2>
+      <p class="sub">프리랜서, 외주비, 아르바이트, 부업 수당 입금 시 3.3%(사업소득세 3% + 지방소득세 0.3%)를 공제한 실수령액을 계산해요.</p>
+      <div class="grid">
+        <div><label for="fGross">총 지급액 (세전, 원)</label><input id="fGross" type="number" inputmode="numeric" placeholder="예: 1000000" value="1000000"></div>
+      </div>
+      <button class="btn" id="freeBtn">실수령액 계산하기</button>
+      <div class="result" id="fResult">
+        <div class="sub" style="margin:0">실제 통장 입금액 (실수령액)</div>
+        <div class="big" id="fBig"></div>
+        <div class="rows" id="fRows"></div>
+        <button class="btn ghost" id="freeShare">📤 결과 공유하기</button>
+      </div>
+    </div>
+  </section>
   <section class="panel" id="p-table">
     <div class="card">
       <h2>2026년 연봉 구간별 실수령액 요약표</h2>

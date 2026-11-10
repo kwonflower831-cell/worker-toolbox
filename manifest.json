@@ -1,0 +1,17 @@
+{
+  "name": "직장인 필수 계산기 2026",
+  "short_name": "직장인계산기",
+  "description": "2026 연봉 실수령액, 퇴직금, 주휴수당, 실업급여, 3.3% 원천징수 계산기",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#3b6cff",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

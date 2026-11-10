@@ -37,7 +37,7 @@ function showTab(name) {
   history.replaceState(null, '', '#' + name);
 }
 document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
-showTab(['salary', 'severance', 'hourly', 'reverse', 'annualleave', 'unemp', 'table'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'salary');
+showTab(['salary', 'severance', 'hourly', 'reverse', 'annualleave', 'unemp', 'table', 'freelance'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'salary');
 
 // ===== 1) 연봉 실수령액 =====
 function taxBase(tp) { // 과세표준 → 산출세액 (종합소득세율)
@@ -403,3 +403,55 @@ if (params.has('annual')) {
   $('annual').value = params.get('annual');
   $('salaryBtn').click();
 }
+// ===== 10) 3.3% 프리랜서/사업소득세 계산기 =====
+let lastFree = '';
+$('freeBtn').onclick = () => {
+  const g = num('fGross');
+  if (g <= 0) return toast('지급액을 입력해 주세요');
+  const tax3 = floor10(g * 0.03);
+  const taxLocal = floor10(tax3 * 0.1);
+  const totalTax = tax3 + taxLocal;
+  const net = g - totalTax;
+
+  $('fBig').textContent = won(net);
+  $('fRows').innerHTML = `
+    <div class="row"><span>총 지급액 (세전)</span><span>${won(g)}</span></div>
+    <div class="row"><span>사업소득세 (3%)</span><span>-${won(tax3)}</span></div>
+    <div class="row"><span>지방소득세 (0.3%)</span><span>-${won(taxLocal)}</span></div>
+    <div class="row"><b>총 공제세액 (3.3%)</b><b>-${won(totalTax)}</b></div>
+    <div class="row"><span class="ok">💡 5월 종합소득세 신고 시 기납부세액으로 공제/환급받을 수 있어요</span><span></span></div>
+  `;
+  $('fResult').classList.add('show');
+  lastFree = `세전 ${won(g)}에서 3.3%(${won(totalTax)}) 공제 후 입금액 약 ${won(net)}`;
+};
+$('freeShare').onclick = () => shareText('💼 ' + lastFree);
+
+// ===== 11) PWA Service Worker & Install Prompt =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+let deferredPrompt;
+const installBtn = $('installBtn');
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBtn) {
+    installBtn.style.display = 'inline-block';
+    installBtn.onclick = async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        installBtn.style.display = 'none';
+        toast('🎉 앱이 설치되었습니다!');
+      }
+      deferredPrompt = null;
+    };
+  }
+});
+window.addEventListener('appinstalled', () => {
+  if (installBtn) installBtn.style.display = 'none';
+});
